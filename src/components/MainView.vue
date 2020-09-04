@@ -44,7 +44,13 @@ text-align: center;
   display: inline-block;
   min-width: 300px;
   max-width: 100%;
-  width: calc(50% - 30px);
+  width: calc(50% - 38px);
   padding: 15px;
 }
+@media only screen and (max-width: 700px) {
+  .container .col {
+    width: calc(100% - 38px);
+  }
+}
+
 </style>
