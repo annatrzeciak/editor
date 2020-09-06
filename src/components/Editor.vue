@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Edytor</h2>
+    <h2>Editor</h2>
     <textarea name="editor" rows="30" v-model="scratch" />
   </div>
 </template>

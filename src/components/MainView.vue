@@ -1,6 +1,6 @@
 <template>
   <div class="mainContent">
-    <h1>Witaj! Wpisz tekst w edytorze</h1>
+    <h1>Hello! Enter your text to editor</h1>
     <div class="container">
       <Editor class="col" :text="text" @changed-text="text = $event" />
       <Preview class="col" :text="text" />
@@ -38,19 +38,22 @@ a {
 }
 .container {
   width: 100%;
-text-align: center;
+  text-align: center;
+  display: flex;
 }
 .container .col {
-  display: inline-block;
   min-width: 300px;
   max-width: 100%;
   width: calc(50% - 38px);
   padding: 15px;
 }
 @media only screen and (max-width: 700px) {
+  .container {
+    flex-direction: column;
+  }
   .container .col {
     width: calc(100% - 38px);
+    min-width: calc(100% - 38px);
   }
 }
-
 </style>
