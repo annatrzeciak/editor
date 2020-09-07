@@ -45,7 +45,7 @@ export default {
     },
     convertTextFromEditor() {
       this.convertedText = this.text;
-      const allTags = this.text.match(/{{(.*?)}}/g);
+      const allTags = new Set(this.text.match(/{{(.*?)}}/g));
       if (!this.errorWithGetData) {
         if (!this.names && allTags) {
           this.loading = true;
@@ -71,7 +71,7 @@ export default {
                     `<strong>"${tagWithoutBrackets}"</strong>: Wrong symbol`
                   );
                 } else {
-                  this.convertedText = this.convertedText.replace(tag, name);
+                  this.convertedText = this.convertedText.replaceAll(tag, name);
                 }
               } else {
                 this.errors.push(
