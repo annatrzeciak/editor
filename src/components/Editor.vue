@@ -2,6 +2,13 @@
   <div>
     <h2>Editor</h2>
     <textarea name="editor" rows="30" v-model="scratch" />
+    <div class="description">
+      <h4>You can use:</h4>
+      <code v-html="'&#123;&#123; Name/BTC &#125;&#125;'" /> - to get name for
+      coin with symbol BTC<br />
+      <code v-html="'&#123;&#123; Exchange/BTC &#125;&#125;'" /> - to get
+      current exchange rate for coin with symbol BTC
+    </div>
   </div>
 </template>
 
@@ -29,5 +36,9 @@ export default {
 textarea {
   width: 100%;
   height: 450px;
+}
+.description {
+  width: 100%;
+  text-align: left;
 }
 </style>
