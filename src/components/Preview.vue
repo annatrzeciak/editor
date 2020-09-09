@@ -9,12 +9,13 @@
     <div class="error" v-for="error in errors" :key="error.id" v-html="error" />
     <div class="error" v-if="errorWithGetData">
       An error occurred while retrieving data
-      <button @click="getNames">try again</button>
+      <button @click="fetchAllCoins">try again</button>
     </div>
   </div>
 </template>
 
 <script>
+import { mapActions, mapGetters } from "vuex";
 import Tag from "./Tag";
 import TagName from "./TagName";
 import TagExchange from "./TagExchange";
@@ -29,20 +30,35 @@ export default {
     text: { type: String }
   },
   data: () => ({
-    coins: {},
-    exchanges: {},
     errors: [],
-    loading: false,
-    errorWithGetData: false
+    loading: false
   }),
   computed: {
+    ...mapGetters("coin", ["allCoins", "errorWithGetData"]),
+    allExchanges() {
+      const exchangesId = [];
+      this.correctTags.forEach(tag => {
+        const tagWithoutBrackets = tag.substr(2, tag.length - 4).trim();
+        const splitedTag = tagWithoutBrackets.split("/");
+        if (splitedTag[0] === "Exchange") {
+          const coin = this.allCoins.find(
+            coin => coin.symbol === splitedTag[1]
+          );
+          if (coin) exchangesId.push(coin.id);
+        }
+      });
+      return exchangesId;
+    },
+    allExchangesCount() {
+      return this.allExchanges.length;
+    },
     allUsedTags() {
       const matches = new Set(this.text.match(/{{(.*?)}}/g));
       return [...matches];
     },
     incorrectTags() {
-        this.clearErrors();
-        if (
+      this.clearErrors();
+      if (
         !this.errorWithGetData &&
         this.allUsedTags &&
         this.allUsedTags.length
@@ -51,9 +67,7 @@ export default {
           const tagWithoutBrackets = tag.substr(2, tag.length - 4).trim();
           const splitedTag = tagWithoutBrackets.split("/");
           if (!this.isCorrectTagFormat(tag)) {
-            this.addErrorMessage(
-              `<strong>"${tag}"</strong>: Wrong tag format`
-            );
+            this.addErrorMessage(`<strong>"${tag}"</strong>: Wrong tag format`);
             return true;
             // incorrectTags.push(tag);
           } else if (splitedTag[0] !== "Name" && splitedTag[0] !== "Exchange") {
@@ -62,11 +76,11 @@ export default {
             );
             return true;
           } else {
-            const coin = this.coins[splitedTag[1]];
+            const coin = this.allCoins.find(
+              coin => coin.symbol === splitedTag[1]
+            );
             if (!coin) {
-              this.addErrorMessage(
-                `<strong>"${tag}"</strong>: Wrong symbol`
-              );
+              this.addErrorMessage(`<strong>"${tag}"</strong>: Wrong symbol`);
               return true;
             }
           }
@@ -93,46 +107,26 @@ export default {
           const tagWithoutBrackets = tag.substr(2, tag.length - 4).trim();
           const splitedTag = tagWithoutBrackets.split("/");
           if (splitedTag[0] === "Name") {
-            html = html.replace(
-              tag,
-              `<TagName :tag="'${tag}'" :allCoins="allCoins"/>`
-            );
+            html = html.replaceAll(tag, `<TagName :tag="'${tag}'"/>`);
           } else if (splitedTag[0] === "Exchange") {
-            html = html.replace(
-              tag,
-              `<TagExchange :tag="'${tag}'" :allCoins="allCoins" :allExchange="allExchanges"/>`
-            );
+            html = html.replaceAll(tag, `<TagExchange :tag="'${tag}'"/>`);
           }
         }
       }
       if (this.incorrectTags.length) {
         for (const tag of this.incorrectTags) {
-          html = html.replace(
-            tag,
-            `<Tag :tag="'${tag}'"/>`
-          );
+          html = html.replaceAll(tag, `<Tag :tag="'${tag}'"/>`);
         }
       }
+        html = html.replaceAll('\n', '<br>');
       return {
-        template: `<div>${html}</div>`,
-        props: {
-          allCoins: {
-            type: Object,
-            default: () => {
-              return this.coins;
-            }
-          },
-          allExchanges: {
-            type: Object,
-            default: () => {
-              return this.exchanges;
-            }
-          }
-        }
+        template: `<div>${html}</div>`
       };
     }
   },
   methods: {
+    ...mapActions("coin", ["fetchAllCoins", "fetchExchangeRates"]),
+
     clearErrors() {
       this.errors = [];
     },
@@ -148,27 +142,15 @@ export default {
         !tagWithoutBrackets.includes("{{") &&
         !tagWithoutBrackets.includes("}}")
       );
-    },
-    async getNames() {
-      this.errorWithGetData = false;
-      this.loading = true;
-      await this.$http
-        .get("/coins")
-        .then(response => {
-          this.coins = response.data.reduce((obj, item) => {
-            obj[item.symbol] = { name: item.name, id: item.id };
-            return obj;
-          }, {});
-          this.loading = false;
-        })
-        .catch(() => {
-          this.errorWithGetData = true;
-          this.loading = false;
-        });
+    }
+  },
+  watch: {
+    allExchangesCount() {
+      this.fetchExchangeRates(this.allExchanges);
     }
   },
   created() {
-    this.getNames();
+    this.fetchAllCoins();
   }
 };
 </script>
@@ -181,6 +163,8 @@ export default {
   padding: 2px;
   text-align: left;
   white-space: pre-line;
+  overflow: auto;
+  margin-bottom: 5px;
 }
 .error {
   color: darkred;

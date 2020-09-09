@@ -28,5 +28,6 @@ export default {
 <style scoped>
 textarea {
   width: 100%;
+  height: 450px;
 }
 </style>

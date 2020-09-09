@@ -3,14 +3,17 @@
 </template>
 
 <script>
+import {mapGetters} from "vuex";
+
 export default {
   name: "TagName",
   props: {
     tag: { type: String, required: false, default: "" },
-    allCoins: { type: Object, required: false, default: () => {} }
   },
   computed: {
-    tagValue() {
+      ...mapGetters("coin", ["allCoins", "errorWithGetData"]),
+
+      tagValue() {
       return this.tag.substr(2, this.tag.length - 4).trim();
     },
     coinSymbol() {
@@ -19,7 +22,7 @@ export default {
     },
     convertedTag() {
       if (this.coinSymbol && this.allCoins) {
-        const coin = this.allCoins[this.coinSymbol];
+        const coin = this.allCoins.find(coin=>coin.symbol ===this.coinSymbol);
         if (coin) return coin.name;
       }
       return null;
