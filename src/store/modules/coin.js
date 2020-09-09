@@ -66,14 +66,10 @@ export default {
               close: data && data.close ? data.close : ""
             }
           });
-          console.log(state.currentExchangeRates);
           return Promise.resolve(data);
         })
         .catch(err => Promise.reject(err))
         .finally(() => {
-          console.log(
-            Math.ceil(Object.keys(state.currentExchangeRates).length / 10)
-          );
           timeouts.push(
             setTimeout(
               () =>

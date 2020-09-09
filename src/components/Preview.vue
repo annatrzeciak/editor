@@ -2,6 +2,7 @@
   <div>
     <h2>Preview</h2>
     <component :is="convertedText" class="preview" />
+    <div v-if="allExchangesCount">data refreshed every {{Math.ceil(allExchangesCount / 10)}} second(s)</div>
     <div class="loading" v-if="loading">
       <img src="/loading.gif" alt="Loading gif" />Data is being loaded, please
       wait
@@ -102,23 +103,27 @@ export default {
     },
     convertedText() {
       let html = this.text;
+      html = html.replace(/\n/g, "<br />");
+
       if (!this.errorWithGetData && this.correctTags.length) {
         for (const tag of this.correctTags) {
           const tagWithoutBrackets = tag.substr(2, tag.length - 4).trim();
           const splitedTag = tagWithoutBrackets.split("/");
-          if (splitedTag[0] === "Name") {
-            html = html.replaceAll(tag, `<TagName :tag="'${tag}'"/>`);
+            const regex = new RegExp(tag, "g");
+
+            if (splitedTag[0] === "Name") {
+            html = html.replace(regex, `<TagName :tag="'${tag}'"/>`);
           } else if (splitedTag[0] === "Exchange") {
-            html = html.replaceAll(tag, `<TagExchange :tag="'${tag}'"/>`);
+            html = html.replace(regex, `<TagExchange :tag="'${tag}'"/>`);
           }
         }
       }
       if (this.incorrectTags.length) {
         for (const tag of this.incorrectTags) {
-          html = html.replaceAll(tag, `<Tag :tag="'${tag}'"/>`);
+            const regex = new RegExp(tag, "g");
+            html = html.replace(regex, `<Tag :tag="'${tag}'"/>`);
         }
       }
-        html = html.replaceAll('\n', '<br>');
       return {
         template: `<div>${html}</div>`
       };
